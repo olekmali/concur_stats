@@ -6,7 +6,14 @@ use Text::Iconv;
 my $converter = Text::Iconv->new("utf-8", "windows-1251");
 # Text::Iconv is not really required. This can be any object with the convert method. Or nothing.
 use Spreadsheet::XLSX;
-my $excel = Spreadsheet::XLSX->new('IES2024.xlsx', $converter);
+
+my $num_args = $#ARGV + 1;
+($num_args == 1) or die ("\nUsage: concur.pl activity_file.xlsx\n");
+($ARGV[0] =~ /\.xlsx$/i) or die ("\nFile $ARGV[0] must be in .XLSX format\n");
+(-f $ARGV[0]) or die ("\nFile $ARGV[0] does not exist\n");
+(-r $ARGV[0]) or die ("\nFile $ARGV[0] is not readable\n");
+
+my $excel = Spreadsheet::XLSX->new($ARGV[0], $converter);
 my $sheet = (@{$excel->{Worksheet}})[0]; 
 
 # totals and totals with itemizations
@@ -57,7 +64,7 @@ if (1) {
     foreach my $p ( sort ( keys(%budgetlinepervol) ) ) {
         printf("%-50s %10.3fK TOTAL\n",  $p, $budgetlinetotal{$p}/1000.0 );
         my @data = ();
-        foreach my $n ( sort ( keys %{ %budgetlinepervol{$p} } ) ) {
+        foreach my $n ( sort ( keys %{ $budgetlinepervol{$p} } ) ) {
             my $item = $budgetlinepervol{$p}{$n}/1000.0;
             # printf("     %-45s %10.3fK\n",  $n, $item );
             push( @data, $item );
@@ -82,7 +89,7 @@ if (1) {
     foreach my $p ( sort ( keys(%budgetlineperrep) ) ) {
         printf("%-50s %10.3fK TOTAL\n",  $p, $budgetlinetotal{$p}/1000.0 );
         my @data = ();
-        foreach my $r ( sort ( keys %{ %budgetlineperrep{$p} } ) ) {
+        foreach my $r ( sort ( keys %{ $budgetlineperrep{$p} } ) ) {
             my $item = $budgetlineperrep{$p}{$r}/1000.0;
             # printf("     %-45s %10.3fK\n",  $r, $item );
             push( @data, $item );
